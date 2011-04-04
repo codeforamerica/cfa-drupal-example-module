@@ -1,0 +1,85 @@
+<?php
+/**
+ * @file
+ * Install file for the CfA example module.
+ *
+ * The first time a module is enabled, it gets installed
+ * and enabled.
+ *
+ * Then you can disable and re-enable it.  Usually this means just
+ * turning it off, but not removing data from the database.
+ *
+ * If a module is disabled, it can be uninstalled, usually where
+ * variables and database tables are removed.
+ */
+
+/**
+ * Implements hook_install().
+ * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_install/7
+ */
+function cfa_example_install() {
+  // This gets fired the first time the module is installed or
+  // if the module is uninstalled and then re-enabled.  This is
+  // different than enabling the module.
+}
+
+/**
+ * Implements hook_uninstall().
+ * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_uninstall/7
+ */
+function cfa_example_uninstall() {
+  // This gets fired when the module is uninstalled.  This is
+  // different than disabling the module.
+}
+
+/**
+ * Implements hook_enable().
+ * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_enable/7
+ */
+function cfa_example_enable() {
+  // This gets fired any time the module is enabled.
+}
+
+/**
+ * Implements hook_disable().
+ * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_disable/7
+ */
+function cfa_example_disable() {
+  // This gets fired any time the module is disabled.
+}
+
+/**
+ * Implements hook_schema().
+ * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_schema/7
+ */
+function cfa_example_schema() {
+  // This defines database table schemas.  It gets taken care of
+  // on install and uninstall.
+  
+  $schema['cfa_example'] = array(
+    'description' => 'This is an example table for the CfA example module.', 
+    'fields' => array(
+      'cfa_id' => array(
+        'description' => 'The primary identifier for a cfa thing.', 
+        'type' => 'serial', 
+        'unsigned' => TRUE, 
+        'not null' => TRUE,
+      ),
+      'title' => array(
+        'description' => 'The title of the CfA thing.', 
+        'type' => 'varchar', 
+        'length' => 255, 
+        'not null' => TRUE, 
+        'default' => '',
+      ),
+    ), 
+    'indexes' => array(
+      'cfa_index_title' => array('title'),
+    ),
+    'primary key' => array('cfa_id'),
+  );
+  return $schema;
+}
+
+
+
