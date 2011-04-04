@@ -80,6 +80,3 @@ function cfa_example_schema() {
   );
   return $schema;
 }
-
-
-

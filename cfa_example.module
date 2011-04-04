@@ -1,0 +1,92 @@
+<?php
+/**
+ * @file
+ * Main module file for the CfA example module.
+ *
+ * Main file for Drupal hooks.
+ *
+ * See Coding Standards, including documenting standards.
+ * http://drupal.org/coding-standards
+ *
+ * Drupal API and compenent documentation.
+ * http://api.drupal.org/api/drupal/7
+ *
+ * Drupal Hooks.  Drupal uses a system called "hooks" to allow 
+ * modules to interact with the execution of the Drupal stack without
+ * hacking the Drupal core code.  See the following API page:
+ * http://api.drupal.org/api/drupal/includes--module.inc/group/hooks/7
+ *
+ * Database Abstraction Layer.  Drupal provides a database abstraction
+ * layer that allows Drupal to be installed on different databases.
+ * http://api.drupal.org/api/drupal/includes--database--database.inc/group/database/7
+ */
+ 
+/**
+ * Implements hook_help().
+ * http://api.drupal.org/api/drupal/modules--help--help.api.php/function/hook_help/7
+ */
+function cfa_example_help($path, $arg) {
+  // Note how the function is name: 
+  // function <name-of-our-module>_<name-of-hook-without-the-word-hook>() {}
+
+  switch ($path) {
+    // Main module help for this module
+    case 'admin/help#cfa_example':
+      return '<p>' . t('The CfA Example module just provides some simple examples to help with presentation and teaching purposes.') . '</p>';
+
+  }
+}
+ 
+/**
+ * Implements hook_menu().
+ * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_menu/7
+ *
+ * Also see more docs on the menu system as a whole:
+ * http://api.drupal.org/api/drupal/includes--menu.inc/group/menu/7
+ *
+ * Also see the Examples module menu_example for more in-depth examples.
+ */
+function cfa_example_menu() {
+  $items = array();
+
+  $items['cfa_example_page'] = array(
+    'title' => 'CfA Example Page', 
+    'page callback' => 'cfa_example_page_callback',
+    'page arguments' => array('An argument'),
+    'access arguments' => array('access content'), 
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  return $items;
+}
+
+/**
+ * Callback for the cfa_example menu item.
+ *
+ * @param $argument
+ *   An argument passed form the menu hook.
+ *
+ * @return
+ *   Output to the screen.
+ */
+function cfa_example_page_callback($argument = '') {
+  $output = '';
+  
+  // Though the argument is not coming from a user, we will
+  // use the check_plain function for security purposes.  Also
+  // the t() function we use it in below can call this automatically.
+  // http://api.drupal.org/api/drupal/includes--bootstrap.inc/function/check_plain/7
+  $argument = check_plain($argument);
+  
+  // Some more output.  This also uses the very imporant t() function that
+  // allows text to be translated:
+  // http://api.drupal.org/api/drupal/includes--bootstrap.inc/function/t/7
+  $output .= t('This is some text and an example of the %function function with the argument from the menu item: %argument.', 
+    array(
+      '%function' => 't()',
+      '%argument' => $argument,
+    )
+  );
+  
+  return $output;
+}
