@@ -81,12 +81,68 @@ function cfa_example_page_callback($argument = '') {
   // Some more output.  This also uses the very imporant t() function that
   // allows text to be translated:
   // http://api.drupal.org/api/drupal/includes--bootstrap.inc/function/t/7
-  $output .= t('This is some text and an example of the %function function with the argument from the menu item: %argument.', 
+  $theme_argument = t('This is some text and an example of the %function function with the argument from the menu item: %argument.', 
     array(
       '%function' => 't()',
       '%argument' => $argument,
     )
   );
+
+  $output = theme('cfa_example_page_theme', array('theme_argument' => $theme_argument));
   
   return $output;
 }
+ 
+/**
+ * Implements hook_theme().
+ * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_theme/7
+ * http://api.drupal.org/api/drupal/modules--system--theme.api.php/group/themeable/7
+ * http://drupal.org/node/933976
+ *
+ * The Drupal Theme system is sort of similar to the hook system, but instead it is
+ * a system of overrides.  By defining theme functions and call them in a specific way
+ * it allows modules, and more importantly themes to override them to take control
+ * of how output is created.
+ *
+ * The general rule is that any output that involves HTML needs to be put through
+ * a theme function.
+ */
+function cfa_example_theme() {
+  // We are defining a very basic item for theming.  It can be called
+  // like the following:
+  // $output = theme('cfa_example_page_theme', $theme_argument);
+  //
+  // The default theme function is defined below.
+  //
+  // To override this function, a theme could define a new function like
+  // the following:
+  // function themename_cfa_example_page_theme($theme_argument) {}
+  return array(
+    'cfa_example_page_theme' => array(
+      'variables' => array('theme_argument' => NULL),
+    ),
+  );
+}
+
+/**
+ * Basic theming function for example page.
+ *
+ * @param $theme_argument
+ *   An argument passed for theming.
+ *
+ * @return
+ *   Output for the screen.
+ */
+function theme_cfa_example_page_theme($variables = array()) {
+  extract($variables);
+  $output = '';
+  
+  $output .= '
+    <div class="cfa-example-page-argument">
+      ' . $theme_argument . '
+    </div>
+  ';
+  
+  return $output;
+}
+ 
