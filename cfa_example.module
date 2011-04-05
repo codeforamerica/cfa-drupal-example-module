@@ -11,6 +11,9 @@
  * Drupal API and compenent documentation.
  * http://api.drupal.org/api/drupal/7
  *
+ * In depth articles on the Drupal API:
+ * http://drupal.org/developing/api
+ *
  * Drupal Hooks.  Drupal uses a system called "hooks" to allow 
  * modules to interact with the execution of the Drupal stack without
  * hacking the Drupal core code.  See the following API page:
@@ -19,6 +22,7 @@
  * Database Abstraction Layer.  Drupal provides a database abstraction
  * layer that allows Drupal to be installed on different databases.
  * http://api.drupal.org/api/drupal/includes--database--database.inc/group/database/7
+ * http://drupal.org/developing/api/database
  */
  
 /**
@@ -51,9 +55,18 @@ function cfa_example_menu() {
 
   $items['cfa_example_page'] = array(
     'title' => 'CfA Example Page', 
+    'description' => 'Use a description for things like hover stats on menu items.', 
     'page callback' => 'cfa_example_page_callback',
     'page arguments' => array('An argument'),
     'access arguments' => array('access content'), 
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['cfa_data_entry'] = array(
+    'title' => 'CfA Data Entry', 
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cfa_example_data_entry'),
+    'access arguments' => array('cfa example data entry'), 
     'type' => MENU_NORMAL_ITEM,
   );
   
@@ -98,6 +111,7 @@ function cfa_example_page_callback($argument = '') {
  * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_theme/7
  * http://api.drupal.org/api/drupal/modules--system--theme.api.php/group/themeable/7
  * http://drupal.org/node/933976
+ * http://drupal.org/node/722174
  *
  * The Drupal Theme system is sort of similar to the hook system, but instead it is
  * a system of overrides.  By defining theme functions and call them in a specific way
@@ -145,4 +159,121 @@ function theme_cfa_example_page_theme($variables = array()) {
   
   return $output;
 }
- 
+
+/**
+ * Implements hook_permission().
+ * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_permission/7
+ *
+ * This allows for the module to provide permissions that can
+ * be assigned to different roles.  The function user_access can
+ * be a quick way to determine a user's access:
+ * http://api.drupal.org/api/drupal/modules--user--user.module/function/user_access/7
+ */
+function cfa_example_permission() {
+  return array(
+    'cfa example data entry' => array(
+      'title' => t('Do CfA Data Entry'), 
+      'description' => t('Perform data entry tasks for CfA!  Exciting!'),
+    ),
+  );
+}
+
+/**
+ * Form provided through drupal_get_form for CfA Entry.
+ * http://api.drupal.org/api/drupal/includes--form.inc/group/form_api/7
+ * 
+ * Forms are created by structured arrays, where indexes starting 
+ * with a hash (#) are properties, while other indexes are new items.
+ * This allows for nesting of items.
+ *
+ * For a complete reference of items and options, see the following:
+ * http://api.drupal.org/api/drupal/developer--topics--forms_api_reference.html/7
+ */
+function cfa_example_data_entry($form, &$form_state) {
+  // Main form for data entry.
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#description' => t('Input a title for this item.  Do not use the word "testing".'),
+    '#required' => TRUE,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+  
+  // Let's display the entries that are in the database.
+  // Notice how tables are referred to with curly brackets {},
+  // as this allows to use table prefixing in Drupal.
+  $result = db_query("SELECT cfa_id, title FROM {cfa_example} WHERE title <> :testing ORDER BY cfa_id",
+    array(':testing' => 'testing')
+  );
+
+  // The above is roughly the same as the following
+  $query = db_select('cfa_example', 'cfa'); 
+  $query->condition('cfa.title', 'testing', '<>')
+    ->fields('cfa', array('cfa_id', 'title'))
+    ->orderBy('cfa_id')
+    ->range(0, 50);
+  $result = $query->execute();
+
+  // Put records into rows for the table theme.
+  $rows = array();
+  foreach ($result as $record) {
+    $row = array();
+    $row['cfa_id'] = $record->cfa_id;
+    $row['title'] = $record->title;
+    $rows[] = $row;
+  }
+
+  // This is a form item that is just arbitrary markup.
+  $form['table'] = array(
+    '#type' => 'item',
+    '#markup' => theme('table', array(
+      'header' => array(t('ID'), t('Title')),
+      'rows' => $rows,
+    ))
+  );
+
+  return $form;
+}
+
+/**
+ * Form validator for the cfa_example_data_entry form.
+ *
+ * You can specific specific validation functions if you want
+ * but by default, you can just use the same function name
+ * with validate at the end.
+ */
+function cfa_example_data_entry_validate($form, &$form_state) {
+  $title = $form_state['values']['title'];
+  if ($title == 'testing') {
+    form_set_error('title', t('Please do not use word "testing" for the title.'));
+  }
+}
+
+/**
+ * Form submission for the cfa_example_data_entry form.
+ *
+ * You can specific specific submission functions if you want
+ * but by default, you can just use the same function name
+ * with validate at the end.
+ */
+function cfa_example_data_entry_submit($form, &$form_state) {
+  // Let's save the values
+  $title = $form_state['values']['title'];
+  
+  // This utilizes the database abstraction layer.  There
+  // are links at the top of this file.
+  $cfa_id = db_insert('cfa_example')
+    ->fields(array('title' => $title))
+    ->execute();
+    
+  // Display a message to the user.
+  if (!empty($cfa_id)) {
+    drupal_set_message(t('New entry added to database with ID: %id', array('%id' => $cfa_id)), 'status');
+  }
+  else {
+    drupal_set_message(t('There was an issue with saving the entry to the database.'), 'error');
+  }
+}

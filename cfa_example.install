@@ -51,6 +51,7 @@ function cfa_example_disable() {
 /**
  * Implements hook_schema().
  * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_schema/7
+ * http://drupal.org/developing/api/schema
  */
 function cfa_example_schema() {
   // This defines database table schemas.  It gets taken care of
