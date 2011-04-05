@@ -232,8 +232,16 @@ function cfa_example_data_entry($form, &$form_state) {
     '#markup' => theme('table', array(
       'header' => array(t('ID'), t('Title')),
       'rows' => $rows,
+      'attributes' => array('id' => 'cfa-example-table-data'),
     ))
   );
+  
+  // And finally, for example purposes we will add some Javascript.
+  // The first call adds a JS file to be included in the HTML, while
+  // the second takes some data and pushes it to the JS to be
+  // available to the scripting.
+  drupal_add_js(drupal_get_path('module', 'cfa_example') . '/js/cfa_example.table.js');
+  drupal_add_js(array('cfa_example' => array('tableID' => 'cfa-example-table-data')), 'setting');
 
   return $form;
 }
